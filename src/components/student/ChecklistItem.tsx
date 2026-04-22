@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { useToast } from "@/components/Toast";
+import { useToast } from "@/components/ui/Toast";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   submitted: { label: "Enviado", color: "bg-blue-100 text-blue-800" },

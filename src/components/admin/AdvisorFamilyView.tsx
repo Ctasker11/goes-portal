@@ -4,9 +4,9 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { AdvisorChecklistItem } from "@/components/AdvisorChecklistItem";
-import { ActivityLogDrawer } from "@/components/ActivityLogDrawer";
-import { useToast } from "@/components/Toast";
+import { AdvisorChecklistItem } from "@/components/admin/AdvisorChecklistItem";
+import { ActivityLogDrawer } from "@/components/admin/ActivityLogDrawer";
+import { useToast } from "@/components/ui/Toast";
 
 const CATEGORY_LABELS: Record<string, string> = {
   academic_records: "Expediente académico",

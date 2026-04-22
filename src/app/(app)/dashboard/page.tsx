@@ -5,8 +5,8 @@ import {
   type Item,
   type CurrentDoc,
   type Comment,
-} from "@/components/ChecklistItem";
-import { Collapsible } from "@/components/Collapsible";
+} from "@/components/student/ChecklistItem";
+import { Collapsible } from "@/components/ui/Collapsible";
 
 export const dynamic = "force-dynamic";
 

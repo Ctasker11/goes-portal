@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Logo } from "@/components/Logo";
+import { Logo } from "@/components/ui/Logo";
 import { createClient } from "@/lib/supabase/server";
-import { SignOutButton } from "@/components/SignOutButton";
+import { SignOutButton } from "@/components/ui/SignOutButton";
 
 export const dynamic = "force-dynamic";
 
