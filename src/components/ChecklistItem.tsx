@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/components/Toast";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   submitted: { label: "Enviado", color: "bg-blue-100 text-blue-800" },
@@ -41,6 +42,7 @@ export function ChecklistItem({
   currentDoc,
   comments,
   unreadCount,
+  isStaleSubmitted = false,
 }: {
   item: Item;
   familyId: string;
@@ -48,8 +50,10 @@ export function ChecklistItem({
   currentDoc: CurrentDoc | null;
   comments: Comment[];
   unreadCount: number;
+  isStaleSubmitted?: boolean;
 }) {
   const router = useRouter();
+  const toast = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
 
@@ -107,6 +111,7 @@ export function ChecklistItem({
 
     if (upErr) {
       setError(upErr.message);
+      toast.show("error", `No se pudo subir: ${upErr.message}`);
       setUploading(false);
       setProgress(0);
       return;
@@ -124,6 +129,7 @@ export function ChecklistItem({
 
     if (insErr) {
       setError(insErr.message);
+      toast.show("error", `Error al registrar: ${insErr.message}`);
       setUploading(false);
       setProgress(0);
       // best-effort cleanup
@@ -134,6 +140,7 @@ export function ChecklistItem({
     setProgress(100);
     setUploading(false);
     setOpen(false);
+    toast.show("success", `${item.title} subido`);
     router.refresh();
   }
 
@@ -151,7 +158,7 @@ export function ChecklistItem({
   }
 
   return (
-    <div className="rounded-lg bg-white shadow-sm">
+    <div id={`item-${item.id}`} className="scroll-mt-24 rounded-lg bg-white shadow-sm">
       <button
         type="button"
         onClick={handleToggle}
@@ -168,6 +175,11 @@ export function ChecklistItem({
             <div className="mt-1 text-xs text-muted-foreground">
               Archivo actual: {currentDoc.filename} (
               {Math.round(currentDoc.size_bytes / 1024)} KB)
+            </div>
+          )}
+          {isStaleSubmitted && (
+            <div className="mt-1 text-xs text-muted-foreground">
+              ⏳ Tu asesor ha sido notificado · en espera de revisión
             </div>
           )}
           {unreadCount > 0 && (

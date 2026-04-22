@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/components/Toast";
 
 // Advisor-side: 'submitted' = student uploaded, awaiting advisor → "Necesita Revisión"
 const STATUS_OPTIONS: { value: string; label: string; color: string }[] = [
@@ -49,15 +50,21 @@ export function AdvisorChecklistItem({
   docs,
   comments,
   currentUserId,
+  selected,
+  onToggleSelect,
 }: {
   item: Item;
   docs: Doc[];
   comments: Comment[];
   currentUserId: string;
+  selected?: boolean;
+  onToggleSelect?: () => void;
 }) {
   const router = useRouter();
+  const toast = useToast();
   const [open, setOpen] = useState(false);
-  const [status, setStatus] = useState(item.status);
+  const [optimisticStatus, setOptimisticStatus] = useState<string | null>(null);
+  const status = optimisticStatus ?? item.status;
   const [savingStatus, setSavingStatus] = useState(false);
   const [commentBody, setCommentBody] = useState("");
   const [internalOnly, setInternalOnly] = useState(false);
@@ -70,6 +77,7 @@ export function AdvisorChecklistItem({
   async function handleStatusChange(newStatus: string) {
     setSavingStatus(true);
     setError(null);
+    setOptimisticStatus(newStatus);
     const supabase = createClient();
     const { error } = await supabase
       .from("checklist_items")
@@ -77,9 +85,11 @@ export function AdvisorChecklistItem({
       .eq("id", item.id);
     if (error) {
       setError(error.message);
-      setStatus(item.status);
+      toast.show("error", `Error al guardar: ${error.message}`);
+      setOptimisticStatus(null);
     } else {
-      setStatus(newStatus);
+      toast.show("success", "Estado actualizado");
+      setOptimisticStatus(null);
       router.refresh();
     }
     setSavingStatus(false);
@@ -123,33 +133,50 @@ export function AdvisorChecklistItem({
   const oldVersions = docs.filter((d) => !d.is_current);
 
   return (
-    <div className="rounded-lg bg-white shadow-sm">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between p-4 text-left"
-      >
-        <div>
-          <div className="font-medium text-navy">{item.title}</div>
-          {item.description && (
-            <div className="text-sm text-muted-foreground">
-              {item.description}
+    <div
+      id={`item-${item.id}`}
+      className={`scroll-mt-40 rounded-lg bg-white shadow-sm ${
+        selected ? "ring-2 ring-navy" : ""
+      }`}
+    >
+      <div className="flex items-start gap-3 p-4">
+        {onToggleSelect && (
+          <input
+            type="checkbox"
+            checked={!!selected}
+            onChange={onToggleSelect}
+            onClick={(e) => e.stopPropagation()}
+            aria-label={`Seleccionar ${item.title}`}
+            className="mt-1 h-4 w-4 accent-navy"
+          />
+        )}
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className="flex flex-1 items-center justify-between text-left"
+        >
+          <div>
+            <div className="font-medium text-navy">{item.title}</div>
+            {item.description && (
+              <div className="text-sm text-muted-foreground">
+                {item.description}
+              </div>
+            )}
+            <div className="mt-1 flex gap-3 text-xs text-muted-foreground">
+              <span>📎 {docs.length} archivo{docs.length !== 1 ? "s" : ""}</span>
+              <span>💬 {comments.length} comentario{comments.length !== 1 ? "s" : ""}</span>
             </div>
-          )}
-          <div className="mt-1 flex gap-3 text-xs text-muted-foreground">
-            <span>📎 {docs.length} archivo{docs.length !== 1 ? "s" : ""}</span>
-            <span>💬 {comments.length} comentario{comments.length !== 1 ? "s" : ""}</span>
           </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <span
-            className={`rounded-full px-3 py-1 text-xs font-medium ${currentStatus.color}`}
-          >
-            {currentStatus.label}
-          </span>
-          <span className="text-muted-foreground">{open ? "▴" : "▾"}</span>
-        </div>
-      </button>
+          <div className="flex items-center gap-3">
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-medium ${currentStatus.color}`}
+            >
+              {currentStatus.label}
+            </span>
+            <span className="text-muted-foreground">{open ? "▴" : "▾"}</span>
+          </div>
+        </button>
+      </div>
 
       {open && (
         <div className="space-y-5 border-t border-border p-4">
