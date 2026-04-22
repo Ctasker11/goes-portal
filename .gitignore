@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Claude Code local config
+.claude/
+
+# Business assets (PRD, pitch decks)
+/assets/
