@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AdvisorFamilyView } from "@/components/AdvisorFamilyView";
+import { AdvisorFamilyView } from "@/components/admin/AdvisorFamilyView";
 
 export const dynamic = "force-dynamic";
 

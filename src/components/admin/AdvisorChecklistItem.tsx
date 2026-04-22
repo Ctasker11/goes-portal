@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { useToast } from "@/components/Toast";
+import { useToast } from "@/components/ui/Toast";
 
 // Advisor-side: 'submitted' = student uploaded, awaiting advisor → "Necesita Revisión"
 const STATUS_OPTIONS: { value: string; label: string; color: string }[] = [

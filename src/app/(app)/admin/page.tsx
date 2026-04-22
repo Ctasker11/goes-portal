@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AdminFamilyList, type FamilyRow } from "@/components/AdminFamilyList";
+import { AdminFamilyList, type FamilyRow } from "@/components/admin/AdminFamilyList";
 
 export const dynamic = "force-dynamic";
 
