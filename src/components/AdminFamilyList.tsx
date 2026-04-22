@@ -19,6 +19,11 @@ export type FamilyRow = {
 type ProgramFilter = "all" | "academic" | "sports" | "both";
 type SortKey = "pending_desc" | "name_asc" | "recent_desc" | "progress_desc";
 
+function isRecent(ts: string | null) {
+  if (!ts) return false;
+  return Date.now() - new Date(ts).getTime() < 24 * 60 * 60 * 1000;
+}
+
 const PROGRAM_LABELS: Record<string, string> = {
   academic: "Académica",
   sports: "Deportiva",
@@ -94,55 +99,72 @@ export function AdminFamilyList({ families }: { families: FamilyRow[] }) {
 
       <div className="overflow-hidden rounded-xl bg-white shadow-sm">
         <table className="w-full text-sm">
-          <thead className="bg-muted text-left text-xs uppercase tracking-wide text-muted-foreground">
+          <colgroup>
+            <col className="w-[28%]" />
+            <col className="w-[14%]" />
+            <col className="w-[20%]" />
+            <col className="w-[14%]" />
+            <col className="w-[14%]" />
+            <col className="w-[10%]" />
+          </colgroup>
+          <thead className="bg-muted text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
-              <th className="px-6 py-3">Estudiante</th>
-              <th className="px-6 py-3">Programa</th>
-              <th className="px-6 py-3">Progreso</th>
-              <th className="px-6 py-3">Necesita revisión</th>
-              <th className="px-6 py-3">Última actividad</th>
-              <th className="px-6 py-3"></th>
+              <th className="px-6 py-3 text-left">Estudiante</th>
+              <th className="px-6 py-3 text-left">Programa</th>
+              <th className="px-6 py-3 text-center">Progreso</th>
+              <th className="px-6 py-3 text-center">Necesita revisión</th>
+              <th className="px-6 py-3 text-left">Última actividad</th>
+              <th className="px-6 py-3 text-right"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-border align-middle">
             {filtered.map((f) => {
               const pct = f.total > 0 ? Math.round((f.approved / f.total) * 100) : 0;
               const lastDate = f.last_activity_at ?? f.created_at;
               return (
                 <tr key={f.id} className="hover:bg-muted/50">
                   <td className="px-6 py-3 font-medium text-navy">
-                    {f.student_name}
+                    <span className="inline-flex items-center gap-2">
+                      {isRecent(f.last_activity_at) && (
+                        <span
+                          className="inline-block h-2 w-2 rounded-full bg-red-brand"
+                          title="Actividad reciente (últimas 24 h)"
+                          aria-label="Actividad reciente"
+                        />
+                      )}
+                      {f.student_name}
+                    </span>
                   </td>
                   <td className="px-6 py-3">{PROGRAM_LABELS[f.program]}</td>
                   <td className="px-6 py-3">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-center gap-2">
                       <div className="h-1.5 w-24 overflow-hidden rounded-full bg-muted">
                         <div
                           className="h-full bg-navy"
                           style={{ width: `${pct}%` }}
                         />
                       </div>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs tabular-nums text-muted-foreground">
                         {f.approved}/{f.total}
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 py-3">
+                  <td className="px-6 py-3 text-center">
                     {f.pending_review > 0 ? (
-                      <span className="rounded-full bg-red-brand px-2.5 py-1 text-xs font-semibold text-white">
+                      <span className="inline-flex min-w-[1.75rem] justify-center rounded-full bg-red-brand px-2.5 py-1 text-xs font-semibold tabular-nums text-white">
                         {f.pending_review}
                       </span>
                     ) : (
                       <span className="text-xs text-muted-foreground">—</span>
                     )}
                   </td>
-                  <td className="px-6 py-3 text-muted-foreground">
+                  <td className="px-6 py-3 whitespace-nowrap text-muted-foreground">
                     {new Date(lastDate).toLocaleDateString("es-ES")}
                   </td>
                   <td className="px-6 py-3 text-right">
                     <Link
                       href={`/admin/${f.id}`}
-                      className="inline-block rounded-md border border-navy bg-white px-4 py-2 text-sm font-semibold text-navy shadow-sm transition hover:bg-navy hover:text-white"
+                      className="inline-block whitespace-nowrap rounded-md border border-navy bg-white px-4 py-2 text-sm font-semibold text-navy shadow-sm transition hover:bg-navy hover:text-white"
                     >
                       Ver perfil
                     </Link>
