@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AdminFamilyList, type FamilyRow } from "@/components/admin/AdminFamilyList";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Panel interno · GOES Portal",
+};
 
 export default async function AdminPage() {
   const supabase = await createClient();

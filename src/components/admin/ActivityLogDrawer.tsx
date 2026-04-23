@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export type ActivityEntry = {
+type ActivityEntry = {
   id: string;
   event: string;
   payload: Record<string, unknown> | null;
@@ -19,6 +19,28 @@ const EVENT_LABELS: Record<string, string> = {
   onboarding_completed: "Onboarding completado",
 };
 
+type ActorShape = { full_name: string | null };
+type ActivityRow = {
+  id: string;
+  event: string;
+  payload: Record<string, unknown> | null;
+  created_at: string;
+  actor: ActorShape | ActorShape[] | null;
+};
+
+function toActivityEntry(raw: unknown): ActivityEntry {
+  const r = raw as ActivityRow;
+  const actorField = r.actor;
+  const actor = Array.isArray(actorField) ? actorField[0] : actorField;
+  return {
+    id: r.id,
+    event: r.event,
+    payload: r.payload,
+    created_at: r.created_at,
+    actor_name: actor?.full_name ?? null,
+  };
+}
+
 export function ActivityLogDrawer({
   familyId,
   open,
@@ -30,14 +52,16 @@ export function ActivityLogDrawer({
 }) {
   const [entries, setEntries] = useState<ActivityEntry[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) return undefined;
     let cancelled = false;
-    (async () => {
+    void (async () => {
       setLoading(true);
+      setError(null);
       const supabase = createClient();
-      const { data } = await supabase
+      const { data, error: qErr } = await supabase
         .from("activity_log")
         .select(
           "id, event, payload, created_at, actor:profiles!activity_log_actor_profile_fk(full_name)",
@@ -46,23 +70,12 @@ export function ActivityLogDrawer({
         .order("created_at", { ascending: false })
         .limit(100);
       if (cancelled) return;
-      const mapped = (data ?? []).map((d) => {
-        const rec = d as unknown as {
-          id: string;
-          event: string;
-          payload: Record<string, unknown> | null;
-          created_at: string;
-          actor: { full_name: string | null } | { full_name: string | null }[] | null;
-        };
-        const actor = Array.isArray(rec.actor) ? rec.actor[0] : rec.actor;
-        return {
-          id: rec.id,
-          event: rec.event,
-          payload: rec.payload,
-          created_at: rec.created_at,
-          actor_name: actor?.full_name ?? null,
-        };
-      });
+      if (qErr) {
+        setError(qErr.message);
+        setLoading(false);
+        return;
+      }
+      const mapped = (data ?? []).map(toActivityEntry);
       setEntries(mapped);
       setLoading(false);
     })();
@@ -108,7 +121,12 @@ export function ActivityLogDrawer({
           {loading && (
             <p className="text-sm text-muted-foreground">Cargando…</p>
           )}
-          {!loading && entries.length === 0 && (
+          {error && (
+            <p className="rounded-md bg-red-50 p-2 text-sm text-red-brand">
+              No se pudo cargar: {error}
+            </p>
+          )}
+          {!loading && !error && entries.length === 0 && (
             <p className="text-sm text-muted-foreground">Sin actividad aún.</p>
           )}
           <ul className="space-y-3">

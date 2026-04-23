@@ -15,7 +15,7 @@ export function SignOutButton() {
 
   return (
     <button
-      onClick={handleSignOut}
+      onClick={() => void handleSignOut()}
       className="text-muted-foreground hover:text-red-brand"
     >
       Cerrar sesión

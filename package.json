@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "knip": "knip",
+    "check": "npm run lint && npm run typecheck && npm run knip"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",
@@ -22,6 +25,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
+    "knip": "^6.6.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

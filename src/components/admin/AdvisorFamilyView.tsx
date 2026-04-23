@@ -52,6 +52,137 @@ type Family = {
   created_at: string;
 };
 
+function groupById<T extends { checklist_item_id: string }>(
+  rows: T[],
+): Map<string, T[]> {
+  const m = new Map<string, T[]>();
+  for (const r of rows) {
+    const arr = m.get(r.checklist_item_id) ?? [];
+    arr.push(r);
+    m.set(r.checklist_item_id, arr);
+  }
+  return m;
+}
+
+function groupByCategory(items: Item[]): Record<string, Item[]> {
+  return items.reduce<Record<string, Item[]>>((acc, item) => {
+    (acc[item.category] ??= []).push(item);
+    return acc;
+  }, {});
+}
+
+function FamilyHeader({
+  family,
+  approved,
+  total,
+  pendingReview,
+  pct,
+  onOpenDrawer,
+}: {
+  family: Family;
+  approved: number;
+  total: number;
+  pendingReview: number;
+  pct: number;
+  onOpenDrawer: () => void;
+}) {
+  return (
+    <section className="sticky top-0 z-20 -mx-6 border-b border-border bg-white/95 px-6 py-4 shadow-sm backdrop-blur">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="truncate text-xl font-bold text-navy">
+            {family.student_name}
+          </h1>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            <span className="capitalize">{family.program}</span> · Alta:{" "}
+            {new Date(family.created_at).toLocaleDateString("es-ES")}
+          </p>
+        </div>
+        <div className="flex items-center gap-5">
+          <HeaderStat value={`${approved}/${total}`} label="Aprobados" />
+          <HeaderStat
+            value={pendingReview.toString()}
+            label="Por revisar"
+            accent
+          />
+          <div className="h-8 w-px bg-border" aria-hidden />
+          <button
+            type="button"
+            onClick={onOpenDrawer}
+            className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-navy hover:bg-muted"
+          >
+            Registro
+          </button>
+        </div>
+      </div>
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full bg-navy transition-all"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </section>
+  );
+}
+
+function HeaderStat({
+  value,
+  label,
+  accent,
+}: {
+  value: string;
+  label: string;
+  accent?: boolean;
+}) {
+  return (
+    <div className="text-center">
+      <div
+        className={`text-lg font-bold tabular-nums ${
+          accent ? "text-red-brand" : "text-navy"
+        }`}
+      >
+        {value}
+      </div>
+      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function BulkBar({
+  count,
+  saving,
+  onApprove,
+  onClear,
+}: {
+  count: number;
+  saving: boolean;
+  onApprove: () => void;
+  onClear: () => void;
+}) {
+  return (
+    <div className="fixed bottom-6 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-full bg-navy px-5 py-3 text-sm text-white shadow-xl">
+      <span className="font-medium">
+        {count} seleccionado{count !== 1 ? "s" : ""}
+      </span>
+      <button
+        onClick={onApprove}
+        disabled={saving}
+        className="rounded-full bg-white px-4 py-1.5 text-xs font-semibold text-navy disabled:opacity-50"
+      >
+        {saving ? "Guardando…" : "Aprobar todos"}
+      </button>
+      <button
+        onClick={onClear}
+        className="text-xs text-white/80 hover:text-white"
+      >
+        Limpiar
+      </button>
+    </div>
+  );
+}
+
 export function AdvisorFamilyView({
   family,
   items,
@@ -71,32 +202,9 @@ export function AdvisorFamilyView({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [bulkSaving, setBulkSaving] = useState(false);
 
-  const docsByItem = useMemo(() => {
-    const m = new Map<string, Doc[]>();
-    docs.forEach((d) => {
-      const arr = m.get(d.checklist_item_id) ?? [];
-      arr.push(d);
-      m.set(d.checklist_item_id, arr);
-    });
-    return m;
-  }, [docs]);
-
-  const commentsByItem = useMemo(() => {
-    const m = new Map<string, Comment[]>();
-    comments.forEach((c) => {
-      const arr = m.get(c.checklist_item_id) ?? [];
-      arr.push(c);
-      m.set(c.checklist_item_id, arr);
-    });
-    return m;
-  }, [comments]);
-
-  const grouped = useMemo(() => {
-    return items.reduce<Record<string, Item[]>>((acc, item) => {
-      (acc[item.category] ??= []).push(item);
-      return acc;
-    }, {});
-  }, [items]);
+  const docsByItem = useMemo(() => groupById(docs), [docs]);
+  const commentsByItem = useMemo(() => groupById(comments), [comments]);
+  const grouped = useMemo(() => groupByCategory(items), [items]);
 
   const total = items.length;
   const approved = items.filter((i) => i.status === "approved").length;
@@ -142,53 +250,14 @@ export function AdvisorFamilyView({
           ← Volver al panel
         </Link>
       </div>
-
-      <section className="sticky top-0 z-20 -mx-6 border-b border-border bg-white/95 px-6 py-4 shadow-sm backdrop-blur">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="min-w-0">
-            <h1 className="truncate text-xl font-bold text-navy">
-              {family.student_name}
-            </h1>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              <span className="capitalize">{family.program}</span> · Alta:{" "}
-              {new Date(family.created_at).toLocaleDateString("es-ES")}
-            </p>
-          </div>
-          <div className="flex items-center gap-5">
-            <div className="text-center">
-              <div className="text-lg font-bold text-navy tabular-nums">
-                {approved}/{total}
-              </div>
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                Aprobados
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-red-brand tabular-nums">
-                {pendingReview}
-              </div>
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                Por revisar
-              </div>
-            </div>
-            <div className="h-8 w-px bg-border" aria-hidden />
-            <button
-              type="button"
-              onClick={() => setDrawerOpen(true)}
-              className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-navy hover:bg-muted"
-            >
-              Registro
-            </button>
-          </div>
-        </div>
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full bg-navy transition-all"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-      </section>
-
+      <FamilyHeader
+        family={family}
+        approved={approved}
+        total={total}
+        pendingReview={pendingReview}
+        pct={pct}
+        onOpenDrawer={() => setDrawerOpen(true)}
+      />
       {Object.entries(grouped).map(([category, list]) => (
         <section key={category}>
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -209,28 +278,14 @@ export function AdvisorFamilyView({
           </div>
         </section>
       ))}
-
       {selected.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-full bg-navy px-5 py-3 text-sm text-white shadow-xl">
-          <span className="font-medium">
-            {selected.size} seleccionado{selected.size !== 1 ? "s" : ""}
-          </span>
-          <button
-            onClick={bulkApprove}
-            disabled={bulkSaving}
-            className="rounded-full bg-white px-4 py-1.5 text-xs font-semibold text-navy disabled:opacity-50"
-          >
-            {bulkSaving ? "Guardando…" : "Aprobar todos"}
-          </button>
-          <button
-            onClick={() => setSelected(new Set())}
-            className="text-xs text-white/80 hover:text-white"
-          >
-            Limpiar
-          </button>
-        </div>
+        <BulkBar
+          count={selected.size}
+          saving={bulkSaving}
+          onApprove={() => void bulkApprove()}
+          onClear={() => setSelected(new Set())}
+        />
       )}
-
       <ActivityLogDrawer
         familyId={family.id}
         open={drawerOpen}

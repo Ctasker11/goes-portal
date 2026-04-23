@@ -38,13 +38,21 @@ export function OnboardingForm({ defaultName = "" }: { defaultName?: string }) {
     setError(null);
 
     const supabase = createClient();
-    const { error } = await supabase.rpc("complete_onboarding", {
-      p_student_name: studentName.trim(),
-      p_program: program,
-    });
+    const { data: newFamilyId, error: rpcErr } = await supabase.rpc(
+      "complete_onboarding",
+      {
+        p_student_name: studentName.trim(),
+        p_program: program,
+      },
+    );
 
-    if (error) {
-      setError(error.message);
+    if (rpcErr) {
+      setError(rpcErr.message);
+      setLoading(false);
+      return;
+    }
+    if (!newFamilyId || typeof newFamilyId !== "string") {
+      setError("El servidor no devolvió un ID de familia válido.");
       setLoading(false);
       return;
     }
@@ -54,7 +62,10 @@ export function OnboardingForm({ defaultName = "" }: { defaultName?: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+    <form
+      onSubmit={(e) => void handleSubmit(e)}
+      className="mt-8 space-y-6"
+    >
       <div>
         <label className="block text-sm font-medium text-navy">
           Nombre completo del estudiante

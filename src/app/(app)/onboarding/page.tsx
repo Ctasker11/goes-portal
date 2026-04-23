@@ -1,19 +1,26 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { assertDefined } from "@/lib/assert";
 import { OnboardingForm } from "./OnboardingForm";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Bienvenido · GOES Portal",
+};
 
 export default async function OnboardingPage() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  assertDefined(user, "auth user");
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("role, family_id, full_name")
-    .eq("id", user!.id)
+    .eq("id", user.id)
     .maybeSingle();
 
   if (profile?.role === "advisor" || profile?.role === "admin") {
@@ -24,7 +31,7 @@ export default async function OnboardingPage() {
   }
 
   const defaultName =
-    profile?.full_name || (user?.user_metadata?.full_name as string) || "";
+    profile?.full_name || (user.user_metadata?.full_name as string) || "";
 
   return (
     <div className="mx-auto max-w-2xl">
