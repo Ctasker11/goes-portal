@@ -14,6 +14,22 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 const MAX_BYTES = 50 * 1024 * 1024;
 const ACCEPTED = "application/pdf,image/png,image/jpeg,image/webp,image/heic";
 
+const MIME_TO_EXT: Record<string, string> = {
+  "application/pdf": "pdf",
+  "image/png": "png",
+  "image/jpeg": "jpg",
+  "image/webp": "webp",
+  "image/heic": "heic",
+};
+
+function buildStorageName(file: File): string {
+  const ext = MIME_TO_EXT[file.type] ?? "bin";
+  const lastDot = file.name.lastIndexOf(".");
+  const rawBase = lastDot > 0 ? file.name.slice(0, lastDot) : file.name;
+  const base = rawBase.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 80) || "file";
+  return `${base}.${ext}`;
+}
+
 export type Item = {
   id: string;
   title: string;
@@ -96,7 +112,7 @@ export function ChecklistItem({
     setProgress(10);
 
     const supabase = createClient();
-    const safeName = file.name.replace(/[^\w.-]/g, "_");
+    const safeName = buildStorageName(file);
     const storagePath = `${familyId}/${item.id}/${crypto.randomUUID()}-${safeName}`;
 
     const { error: upErr } = await supabase.storage

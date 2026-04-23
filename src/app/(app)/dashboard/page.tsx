@@ -38,17 +38,18 @@ export default async function DashboardPage() {
     redirect("/onboarding");
   }
 
-  const { data: items } = await supabase
-    .from("checklist_items")
-    .select("id, category, title, description, status")
-    .eq("family_id", profile.family_id)
-    .order("sort_order");
-
-  const { data: docs } = await supabase
-    .from("documents")
-    .select("id, checklist_item_id, filename, size_bytes, created_at, storage_path")
-    .eq("family_id", profile.family_id)
-    .eq("is_current", true);
+  const [{ data: items }, { data: docs }] = await Promise.all([
+    supabase
+      .from("checklist_items")
+      .select("id, category, title, description, status")
+      .eq("family_id", profile.family_id)
+      .order("sort_order"),
+    supabase
+      .from("documents")
+      .select("id, checklist_item_id, filename, size_bytes, created_at, storage_path")
+      .eq("family_id", profile.family_id)
+      .eq("is_current", true),
+  ]);
 
   const docByItem = new Map<string, CurrentDoc>();
   (docs ?? []).forEach((d) =>
@@ -62,21 +63,20 @@ export default async function DashboardPage() {
   );
 
   const itemIds = (items ?? []).map((i) => i.id);
-  const { data: rawComments } = itemIds.length
-    ? await supabase
-        .from("comments")
-        .select("id, checklist_item_id, author_id, body, created_at")
-        .in("checklist_item_id", itemIds)
-        .order("created_at", { ascending: true })
-    : { data: [] };
-
-  const { data: views } = itemIds.length
-    ? await supabase
-        .from("item_views")
-        .select("checklist_item_id, last_seen_at")
-        .eq("user_id", user!.id)
-        .in("checklist_item_id", itemIds)
-    : { data: [] };
+  const [{ data: rawComments }, { data: views }] = itemIds.length
+    ? await Promise.all([
+        supabase
+          .from("comments")
+          .select("id, checklist_item_id, author_id, body, created_at")
+          .in("checklist_item_id", itemIds)
+          .order("created_at", { ascending: true }),
+        supabase
+          .from("item_views")
+          .select("checklist_item_id, last_seen_at")
+          .eq("user_id", user!.id)
+          .in("checklist_item_id", itemIds),
+      ])
+    : [{ data: [] }, { data: [] }];
 
   const lastSeenByItem = new Map<string, string>();
   (views ?? []).forEach((v) =>
