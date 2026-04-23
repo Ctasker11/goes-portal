@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { friendlyError } from "@/lib/errors";
 
 type ActivityEntry = {
   id: string;
@@ -71,7 +72,7 @@ export function ActivityLogDrawer({
         .limit(100);
       if (cancelled) return;
       if (qErr) {
-        setError(qErr.message);
+        setError(friendlyError(qErr, "No se pudo cargar el registro."));
         setLoading(false);
         return;
       }
@@ -123,7 +124,7 @@ export function ActivityLogDrawer({
           )}
           {error && (
             <p className="rounded-md bg-red-50 p-2 text-sm text-red-brand">
-              No se pudo cargar: {error}
+              {error}
             </p>
           )}
           {!loading && !error && entries.length === 0 && (

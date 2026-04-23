@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/Toast";
+import { friendlyError } from "@/lib/errors";
 
 const MAX_BYTES = 50 * 1024 * 1024;
 const ACCEPTED = "application/pdf,image/png,image/jpeg,image/webp,image/heic";
@@ -140,8 +141,9 @@ export function UploadDropzone({
     setProgress(70);
 
     if (upErr) {
-      setError(upErr.message);
-      toast.show("error", `No se pudo subir: ${upErr.message}`);
+      const msg = friendlyError(upErr, "No se pudo subir el archivo.");
+      setError(msg);
+      toast.show("error", msg);
       setUploading(false);
       setProgress(0);
       return;
@@ -158,17 +160,15 @@ export function UploadDropzone({
     });
 
     if (insErr) {
-      setError(insErr.message);
-      toast.show("error", `Error al registrar: ${insErr.message}`);
+      const msg = friendlyError(insErr, "No se pudo registrar el archivo.");
+      setError(msg);
+      toast.show("error", msg);
       const { error: rmErr } = await supabase.storage
         .from("documents")
         .remove([storagePath]);
       if (rmErr) {
-        // Orphan file left in bucket; surface so operator can clean up.
-        toast.show(
-          "error",
-          `Archivo huérfano en storage (${storagePath}): ${rmErr.message}`,
-        );
+        console.error("[storage] orphan left at", storagePath, rmErr);
+        toast.show("error", "Archivo huérfano en storage. Contacta al equipo.");
       }
       setUploading(false);
       setProgress(0);

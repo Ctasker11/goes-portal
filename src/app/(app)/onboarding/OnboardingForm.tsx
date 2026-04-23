@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { friendlyError } from "@/lib/errors";
 
 type Program = "academic" | "sports" | "both";
 
@@ -47,7 +48,7 @@ export function OnboardingForm({ defaultName = "" }: { defaultName?: string }) {
     );
 
     if (rpcErr) {
-      setError(rpcErr.message);
+      setError(friendlyError(rpcErr, "No se pudo completar el onboarding."));
       setLoading(false);
       return;
     }
@@ -74,6 +75,7 @@ export function OnboardingForm({ defaultName = "" }: { defaultName?: string }) {
           type="text"
           required
           minLength={2}
+          maxLength={255}
           value={studentName}
           onChange={(e) => setStudentName(e.target.value)}
           className="mt-1 w-full rounded-md border border-border px-3 py-2 focus:border-navy focus:outline-none"

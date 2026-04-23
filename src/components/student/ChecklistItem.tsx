@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/Toast";
+import { friendlyError } from "@/lib/errors";
 import { UploadDropzone } from "./UploadDropzone";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
@@ -141,7 +142,10 @@ async function downloadDoc(storagePath: string): Promise<Result<string>> {
     .from("documents")
     .createSignedUrl(storagePath, 60);
   if (error || !data) {
-    return { ok: false, error: error?.message ?? "Sin enlace" };
+    return {
+      ok: false,
+      error: friendlyError(error, "No se pudo generar el enlace."),
+    };
   }
   return { ok: true, value: data.signedUrl };
 }
@@ -195,7 +199,7 @@ export function ChecklistItem({
     if (!currentDoc) return;
     const result = await downloadDoc(currentDoc.storage_path);
     if (!result.ok) {
-      toast.show("error", `No se pudo descargar: ${result.error}`);
+      toast.show("error", result.error);
       return;
     }
     window.open(result.value, "_blank");

@@ -4,6 +4,7 @@ import { useReducer, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/Toast";
+import { friendlyError } from "@/lib/errors";
 
 // Advisor-side: 'submitted' = student uploaded, awaiting advisor → "Necesita Revisión"
 const STATUS_OPTIONS: { value: string; label: string; color: string }[] = [
@@ -372,6 +373,7 @@ function CommentForm({
         onChange={(e) => setBody(e.target.value)}
         placeholder="Escribir comentario para el estudiante…"
         rows={2}
+        maxLength={5000}
         className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-navy focus:outline-none"
       />
       <div className="flex items-center justify-between">
@@ -420,8 +422,9 @@ export function AdvisorChecklistItem({
     dispatch({ type: "status_start", optimistic: newStatus });
     const { error: updErr } = await updateItemStatus(item.id, newStatus);
     if (updErr) {
-      toast.show("error", `Error al guardar: ${updErr.message}`);
-      dispatch({ type: "status_err", error: updErr.message });
+      const msg = friendlyError(updErr, "No se pudo actualizar el estado.");
+      toast.show("error", msg);
+      dispatch({ type: "status_err", error: msg });
       return;
     }
     toast.show("success", "Estado actualizado");
@@ -447,7 +450,10 @@ export function AdvisorChecklistItem({
       internalOnly,
     );
     if (insErr) {
-      dispatch({ type: "comment_err", error: insErr.message });
+      dispatch({
+        type: "comment_err",
+        error: friendlyError(insErr, "No se pudo enviar el comentario."),
+      });
       return;
     }
     dispatch({ type: "comment_ok" });

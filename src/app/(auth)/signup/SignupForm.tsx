@@ -69,6 +69,8 @@ export function SignupForm() {
           <input
             type="text"
             required
+            minLength={2}
+            maxLength={255}
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             className="mt-1 w-full rounded-md border border-border px-3 py-2 focus:border-navy focus:outline-none"
