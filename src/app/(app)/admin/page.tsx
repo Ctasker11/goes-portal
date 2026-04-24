@@ -39,22 +39,22 @@ export default async function AdminPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-navy">Panel interno</h1>
-          <p className="text-sm text-muted-foreground">
-            Estudiantes activos · {families?.length ?? 0}
-            {totalPending > 0 && (
-              <>
-                {" · "}
-                <span className="font-medium text-red-brand">
-                  {totalPending} documento{totalPending !== 1 ? "s" : ""} necesita
-                  {totalPending === 1 ? "" : "n"} revisión
-                </span>
-              </>
-            )}
-          </p>
-        </div>
+      <div>
+        <h1 className="font-display text-3xl font-extrabold tracking-tight text-foreground">
+          Panel interno
+        </h1>
+        <p className="mt-1 text-sm text-text-dim">
+          Estudiantes activos · {families?.length ?? 0}
+          {totalPending > 0 && (
+            <>
+              {" · "}
+              <span className="font-medium text-accent">
+                {totalPending} documento{totalPending !== 1 ? "s" : ""} necesita
+                {totalPending === 1 ? "" : "n"} revisión
+              </span>
+            </>
+          )}
+        </p>
       </div>
 
       <AdminFamilyList families={(families ?? []) as FamilyRow[]} />

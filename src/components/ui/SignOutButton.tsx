@@ -16,7 +16,7 @@ export function SignOutButton() {
   return (
     <button
       onClick={() => void handleSignOut()}
-      className="text-muted-foreground hover:text-red-brand"
+      className="rounded-full bg-[color:var(--surface-sunken)] px-3.5 py-1.5 text-xs text-text-dim transition hover:bg-[color:var(--surface-track)] hover:text-foreground"
     >
       Cerrar sesión
     </button>

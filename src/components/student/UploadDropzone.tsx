@@ -61,28 +61,44 @@ function Dropzone({
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
-      className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition ${
+      className={`flex flex-col items-center justify-center rounded-xl border border-dashed p-7 transition ${
         dragOver
-          ? "border-navy bg-navy/5"
-          : "border-border hover:border-navy/50"
+          ? "border-accent/50 bg-[color:var(--input-bg)]"
+          : "border-[color:var(--border-input)] hover:border-accent/40 hover:bg-[color:var(--surface-sunken)]"
       }`}
     >
-      <p className="text-sm text-muted-foreground">Arrastra un archivo aquí, o</p>
-      <button
-        type="button"
-        onClick={onPick}
-        disabled={uploading}
-        className="mt-2 rounded-full bg-navy px-5 py-2 text-sm font-semibold text-white transition hover:bg-navy-dark disabled:opacity-50"
-      >
-        {uploading
-          ? `Subiendo… ${progress}%`
-          : hasCurrent
-            ? "Subir nueva versión"
-            : "Seleccionar archivo"}
-      </button>
-      <p className="mt-3 text-xs text-muted-foreground">
-        PDF, PNG, JPG, WEBP, HEIC · máx. 50 MB
-      </p>
+      {uploading ? (
+        <div className="w-full">
+          <div className="mb-2 text-center text-[13px] font-semibold text-accent">
+            Subiendo… {progress}%
+          </div>
+          <div className="h-1 overflow-hidden rounded-full bg-[color:var(--surface-track)]">
+            <div
+              className="h-full rounded-full bg-accent transition-all"
+              style={{
+                width: `${progress}%`,
+                boxShadow: "0 0 8px var(--glow-strong)",
+              }}
+            />
+          </div>
+        </div>
+      ) : (
+        <>
+          <p className="text-[13px] text-text-dim">
+            Arrastra un archivo aquí, o
+          </p>
+          <button
+            type="button"
+            onClick={onPick}
+            className="mt-2.5 rounded-full bg-accent px-5 py-2 text-[13px] font-bold text-accent-text transition hover:bg-accent-dark"
+          >
+            {hasCurrent ? "Subir nueva versión" : "Seleccionar archivo"}
+          </button>
+          <p className="mt-2 text-[11px] text-text-muted">
+            PDF, PNG, JPG, WEBP, HEIC · máx. 50 MB
+          </p>
+        </>
+      )}
       <input
         ref={fileRef}
         type="file"
@@ -209,7 +225,10 @@ export function UploadDropzone({
         }}
       />
       {error && (
-        <p className="mt-3 rounded-md bg-red-50 p-2 text-sm text-red-brand">
+        <p
+          className="mt-3 rounded-md p-2 text-sm text-red-brand"
+          style={{ background: "rgba(206,69,77,0.1)" }}
+        >
           {error}
         </p>
       )}

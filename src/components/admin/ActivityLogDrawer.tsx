@@ -42,6 +42,63 @@ function toActivityEntry(raw: unknown): ActivityEntry {
   };
 }
 
+function EntryItem({ e }: { e: ActivityEntry }) {
+  return (
+    <li
+      className="rounded-lg border border-border p-3 text-sm"
+      style={{ background: "var(--surface-sunken)" }}
+    >
+      <div className="font-semibold text-foreground">
+        {EVENT_LABELS[e.event] ?? e.event}
+      </div>
+      <div className="mt-1 text-[11px] text-text-muted">
+        {e.actor_name ?? "Sistema"} ·{" "}
+        {new Date(e.created_at).toLocaleString("es-ES")}
+      </div>
+      {e.payload && Object.keys(e.payload).length > 0 && (
+        <pre
+          className="mt-2 overflow-x-auto rounded p-2 text-[11px] text-text-dim"
+          style={{ background: "var(--surface-code)" }}
+        >
+          {JSON.stringify(e.payload, null, 2)}
+        </pre>
+      )}
+    </li>
+  );
+}
+
+function DrawerBody({
+  entries,
+  loading,
+  error,
+}: {
+  entries: ActivityEntry[];
+  loading: boolean;
+  error: string | null;
+}) {
+  return (
+    <div className="flex-1 overflow-y-auto p-5">
+      {loading && <p className="text-sm text-text-dim">Cargando…</p>}
+      {error && (
+        <p
+          className="rounded-md p-2 text-sm text-red-brand"
+          style={{ background: "rgba(206,69,77,0.1)" }}
+        >
+          {error}
+        </p>
+      )}
+      {!loading && !error && entries.length === 0 && (
+        <p className="text-sm text-text-muted">Sin actividad aún.</p>
+      )}
+      <ul className="space-y-3">
+        {entries.map((e) => (
+          <EntryItem key={e.id} e={e} />
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function ActivityLogDrawer({
   familyId,
   open,
@@ -98,60 +155,35 @@ export function ActivityLogDrawer({
   return (
     <div className="fixed inset-0 z-40">
       <div
-        className="absolute inset-0 bg-black/30"
+        className="absolute inset-0 backdrop-blur-sm"
+        style={{ background: "var(--surface-scrim)" }}
         onClick={onClose}
         aria-hidden
       />
       <aside
         role="dialog"
         aria-label="Registro de actividad"
-        className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-xl"
+        className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col border-l border-border shadow-2xl"
+        style={{
+          background: "var(--surface-overlay)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+        }}
       >
         <header className="flex items-center justify-between border-b border-border px-5 py-4">
-          <h2 className="text-lg font-bold text-navy">Registro de actividad</h2>
+          <h2 className="font-display text-lg font-extrabold text-foreground">
+            Registro de actividad
+          </h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded p-1 text-muted-foreground hover:bg-muted"
+            className="rounded p-1 text-text-dim hover:bg-[color:var(--surface-sunken)] hover:text-foreground"
             aria-label="Cerrar"
           >
             ✕
           </button>
         </header>
-        <div className="flex-1 overflow-y-auto p-5">
-          {loading && (
-            <p className="text-sm text-muted-foreground">Cargando…</p>
-          )}
-          {error && (
-            <p className="rounded-md bg-red-50 p-2 text-sm text-red-brand">
-              {error}
-            </p>
-          )}
-          {!loading && !error && entries.length === 0 && (
-            <p className="text-sm text-muted-foreground">Sin actividad aún.</p>
-          )}
-          <ul className="space-y-3">
-            {entries.map((e) => (
-              <li
-                key={e.id}
-                className="rounded-md border border-border bg-white p-3 text-sm"
-              >
-                <div className="font-medium text-navy">
-                  {EVENT_LABELS[e.event] ?? e.event}
-                </div>
-                <div className="mt-1 text-xs text-muted-foreground">
-                  {e.actor_name ?? "Sistema"} ·{" "}
-                  {new Date(e.created_at).toLocaleString("es-ES")}
-                </div>
-                {e.payload && Object.keys(e.payload).length > 0 && (
-                  <pre className="mt-2 overflow-x-auto rounded bg-muted p-2 text-[11px] text-muted-foreground">
-                    {JSON.stringify(e.payload, null, 2)}
-                  </pre>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <DrawerBody entries={entries} loading={loading} error={error} />
       </aside>
     </div>
   );

@@ -5,6 +5,9 @@ import {
   type Comment,
 } from "@/components/student/ChecklistItem";
 import { Collapsible } from "@/components/ui/Collapsible";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { Ring } from "@/components/ui/Ring";
+import { Reveal } from "@/components/ui/Reveal";
 import { isStaleSubmitted } from "./data";
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -16,73 +19,65 @@ const CATEGORY_LABELS: Record<string, string> = {
   other: "Otros",
 };
 
-export function ProgressHeader({
-  fullName,
-  pct,
+function progressMessage(pct: number): string {
+  if (pct < 25) return "Tu viaje hacia la beca empieza aquí.";
+  if (pct < 50) return "Buen ritmo. Sigue así.";
+  if (pct < 75) return "Más de la mitad — tu asesor está revisando.";
+  if (pct < 100) return "Ya casi. Últimos documentos.";
+  return "Expediente completo.";
+}
+
+function Stat({
+  label,
+  count,
+  color,
 }: {
-  fullName: string | null | undefined;
-  pct: number;
+  label: string;
+  count: number;
+  color: string;
 }) {
   return (
-    <section className="rounded-xl bg-white p-6 shadow-sm">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-navy">
-            ¡Hola{fullName ? `, ${fullName}` : ""}!
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Tu progreso hacia la beca. Sube los documentos pendientes y tu
-            asesor los revisará.
-          </p>
-        </div>
-        <div className="text-right">
-          <div className="text-3xl font-bold text-navy">{pct}%</div>
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
-            Completado
-          </div>
-        </div>
-      </div>
-      <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
-        <div
-          className="h-full bg-red-brand transition-all"
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-      <StatusLegend />
-    </section>
+    <div className="flex items-center gap-1.5 text-sm text-text-dim">
+      <span
+        className="h-2 w-2 rounded-full"
+        style={{ background: color }}
+        aria-hidden
+      />
+      <strong className="text-foreground">{count}</strong> {label}
+    </div>
   );
 }
 
-function StatusLegend() {
+export function ProgressHeader({
+  fullName,
+  pct,
+  approvedCount,
+  inProcessCount,
+  pendingCount,
+}: {
+  fullName: string | null | undefined;
+  pct: number;
+  approvedCount: number;
+  inProcessCount: number;
+  pendingCount: number;
+}) {
   return (
-    <details className="group mt-4 text-xs text-muted-foreground">
-      <summary className="inline-flex cursor-pointer items-center gap-1 select-none">
-        <span className="underline-offset-2 group-hover:underline">
-          ¿Qué significan los estados?
-        </span>
-        <span className="transition group-open:rotate-180">▾</span>
-      </summary>
-      <ul className="mt-2 space-y-1">
-        <li>
-          <span className="mr-2 rounded-full bg-blue-100 px-2 py-0.5 text-blue-800">
-            Enviado
-          </span>
-          El documento se subió y espera revisión.
-        </li>
-        <li>
-          <span className="mr-2 rounded-full bg-yellow-100 px-2 py-0.5 text-yellow-800">
-            En revisión
-          </span>
-          Tu asesor lo está revisando.
-        </li>
-        <li>
-          <span className="mr-2 rounded-full bg-green-100 px-2 py-0.5 text-green-800">
-            Aprobado
-          </span>
-          Todo en orden — no requiere acción.
-        </li>
-      </ul>
-    </details>
+    <Reveal>
+      <section className="text-center">
+        <div className="inline-block">
+          <Ring pct={pct} size={120} stroke={5} />
+        </div>
+        <h1 className="mt-5 font-display text-3xl font-extrabold tracking-tight text-foreground">
+          ¡Hola{fullName ? `, ${fullName}` : ""}!
+        </h1>
+        <p className="mt-2 text-[15px] text-text-dim">{progressMessage(pct)}</p>
+        <div className="mt-5 flex flex-wrap justify-center gap-6">
+          <Stat label="Aprobados" count={approvedCount} color="#4ade80" />
+          <Stat label="En proceso" count={inProcessCount} color="#fbbf24" />
+          <Stat label="Pendientes" count={pendingCount} color="#64748b" />
+        </div>
+      </section>
+    </Reveal>
   );
 }
 
@@ -95,39 +90,68 @@ export function NextActionBanner({
 }) {
   const remaining = count - 1;
   return (
-    <a
-      href={`#item-${action.id}`}
-      className="flex items-center justify-between rounded-xl border border-red-brand/30 bg-red-brand/5 p-5 shadow-sm transition hover:bg-red-brand/10"
-    >
-      <div>
-        <div className="text-xs font-semibold uppercase tracking-wide text-red-brand">
-          Siguiente paso
-        </div>
-        <div className="mt-1 text-base font-medium text-navy">
-          Sube: {action.title}
-        </div>
-        {remaining > 0 && (
-          <div className="mt-0.5 text-xs text-muted-foreground">
-            {remaining} documento{remaining !== 1 ? "s" : ""} más pendiente
-            {remaining !== 1 ? "s" : ""} después de este.
+    <Reveal delay={200}>
+      <a href={`#item-${action.id}`} className="block">
+        <GlassCard glow className="p-5">
+          <div className="flex items-center gap-4">
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-base font-extrabold text-accent-text"
+              style={{
+                background: "var(--accent)",
+                animation: "pulse 3s ease infinite",
+              }}
+              aria-hidden
+            >
+              →
+            </div>
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-[0.06em] text-accent">
+                Siguiente paso
+              </div>
+              <div className="mt-0.5 text-[15px] font-semibold text-foreground">
+                {action.title}
+              </div>
+              {remaining > 0 && (
+                <div className="mt-0.5 text-xs text-text-dim">
+                  {remaining} más después de este
+                </div>
+              )}
+            </div>
           </div>
-        )}
-      </div>
-      <span className="rounded-full bg-red-brand px-4 py-2 text-sm font-semibold text-white">
-        Ir →
-      </span>
-    </a>
+        </GlassCard>
+      </a>
+    </Reveal>
   );
 }
 
 export function EmptyState() {
   return (
-    <div className="rounded-xl bg-white p-10 text-center shadow-sm">
-      <p className="text-muted-foreground">
+    <GlassCard className="p-10 text-center">
+      <p className="text-sm text-text-dim">
         Aún no tienes documentos asignados. Tu asesor GOES te los preparará en
         breve.
       </p>
-    </div>
+    </GlassCard>
+  );
+}
+
+function CategoryCountBadge({
+  done,
+  total,
+}: {
+  done: number;
+  total: number;
+}) {
+  const allDone = done === total && total > 0;
+  const color = allDone ? "#4ade80" : "var(--text-muted)";
+  const bg = allDone ? "rgba(34,197,94,0.12)" : "var(--surface-sunken)";
+  return (
+    <span
+      className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold"
+      style={{ background: bg, color }}
+    >
+      {done}/{total}
+    </span>
   );
 }
 
@@ -139,6 +163,7 @@ export function CategoryGroup({
   unreadByItem,
   familyId,
   userId,
+  delay,
 }: {
   category: string;
   list: Item[];
@@ -147,28 +172,21 @@ export function CategoryGroup({
   unreadByItem: Map<string, number>;
   familyId: string;
   userId: string;
+  delay: number;
 }) {
   const approved = list.filter((i) => i.status === "approved").length;
   const allDone = approved === list.length && list.length > 0;
   return (
-    <Collapsible
-      defaultOpen={!allDone}
-      title={
-        <>
-          {CATEGORY_LABELS[category] ?? category}
-          <span
-            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-              allDone
-                ? "bg-green-100 text-green-800"
-                : "bg-muted text-muted-foreground"
-            }`}
-          >
-            {approved}/{list.length}
-          </span>
-        </>
-      }
-    >
-      <div className="space-y-2">
+    <Reveal delay={delay}>
+      <Collapsible
+        defaultOpen={!allDone}
+        title={
+          <>
+            {CATEGORY_LABELS[category] ?? category}
+            <CategoryCountBadge done={approved} total={list.length} />
+          </>
+        }
+      >
         {list.map((item) => {
           const doc = docByItem.get(item.id) ?? null;
           return (
@@ -184,7 +202,7 @@ export function CategoryGroup({
             />
           );
         })}
-      </div>
-    </Collapsible>
+      </Collapsible>
+    </Reveal>
   );
 }

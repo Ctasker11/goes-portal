@@ -25,6 +25,41 @@ const PROGRAMS: { value: Program; title: string; desc: string }[] = [
   },
 ];
 
+function ProgramOption({
+  option,
+  selected,
+  onSelect,
+}: {
+  option: (typeof PROGRAMS)[number];
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <label
+      className="flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition"
+      style={{
+        borderColor: selected ? "var(--border-active)" : "var(--border)",
+        background: selected
+          ? "var(--surface-comment)"
+          : "var(--surface-sunken)",
+      }}
+    >
+      <input
+        type="radio"
+        name="program"
+        value={option.value}
+        checked={selected}
+        onChange={onSelect}
+        className="mt-1 accent-[color:var(--accent)]"
+      />
+      <div>
+        <div className="font-semibold text-foreground">{option.title}</div>
+        <div className="mt-0.5 text-xs text-text-dim">{option.desc}</div>
+      </div>
+    </label>
+  );
+}
+
 export function OnboardingForm({ defaultName = "" }: { defaultName?: string }) {
   const router = useRouter();
   const [studentName, setStudentName] = useState(defaultName);
@@ -63,14 +98,11 @@ export function OnboardingForm({ defaultName = "" }: { defaultName?: string }) {
   }
 
   return (
-    <form
-      onSubmit={(e) => void handleSubmit(e)}
-      className="mt-8 space-y-6"
-    >
-      <div>
-        <label className="block text-sm font-medium text-navy">
+    <form onSubmit={(e) => void handleSubmit(e)} className="mt-7 space-y-6">
+      <label className="block">
+        <span className="text-xs font-semibold text-text-dim">
           Nombre completo del estudiante
-        </label>
+        </span>
         <input
           type="text"
           required
@@ -78,47 +110,35 @@ export function OnboardingForm({ defaultName = "" }: { defaultName?: string }) {
           maxLength={255}
           value={studentName}
           onChange={(e) => setStudentName(e.target.value)}
-          className="mt-1 w-full rounded-md border border-border px-3 py-2 focus:border-navy focus:outline-none"
           placeholder="Ej. María García López"
+          className="mt-1.5 w-full rounded-xl border border-[color:var(--border-input)] bg-[color:var(--input-bg)] px-3.5 py-2.5 text-sm text-foreground placeholder:text-text-muted outline-none focus:border-accent/60"
         />
-        <p className="mt-1 text-xs text-muted-foreground">
+        <p className="mt-1 text-[11px] text-text-muted">
           Tal y como aparece en el pasaporte.
         </p>
-      </div>
+      </label>
 
       <div>
-        <label className="block text-sm font-medium text-navy">
+        <span className="text-xs font-semibold text-text-dim">
           ¿Qué tipo de beca buscas?
-        </label>
-        <div className="mt-3 space-y-2">
+        </span>
+        <div className="mt-2.5 space-y-2">
           {PROGRAMS.map((p) => (
-            <label
+            <ProgramOption
               key={p.value}
-              className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition ${
-                program === p.value
-                  ? "border-navy bg-navy/5"
-                  : "border-border hover:border-navy/50"
-              }`}
-            >
-              <input
-                type="radio"
-                name="program"
-                value={p.value}
-                checked={program === p.value}
-                onChange={() => setProgram(p.value)}
-                className="mt-1 accent-navy"
-              />
-              <div>
-                <div className="font-semibold text-navy">{p.title}</div>
-                <div className="text-sm text-muted-foreground">{p.desc}</div>
-              </div>
-            </label>
+              option={p}
+              selected={program === p.value}
+              onSelect={() => setProgram(p.value)}
+            />
           ))}
         </div>
       </div>
 
       {error && (
-        <p className="rounded-md bg-red-50 p-3 text-sm text-red-brand">
+        <p
+          className="rounded-md p-3 text-sm text-red-brand"
+          style={{ background: "rgba(206,69,77,0.1)" }}
+        >
           {error}
         </p>
       )}
@@ -126,7 +146,8 @@ export function OnboardingForm({ defaultName = "" }: { defaultName?: string }) {
       <button
         type="submit"
         disabled={!program || !studentName.trim() || loading}
-        className="w-full rounded-full bg-red-brand py-3 font-semibold text-white transition hover:bg-red-brand-dark disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full rounded-full bg-accent py-3 text-sm font-bold text-accent-text transition hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-50"
+        style={{ boxShadow: "0 0 16px var(--glow)" }}
       >
         {loading ? "Creando tu portal…" : "Comenzar"}
       </button>

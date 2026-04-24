@@ -4,21 +4,16 @@ import { useReducer, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/Toast";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { Badge, type BadgeStatus } from "@/components/ui/Badge";
 import { friendlyError } from "@/lib/errors";
 
 // Advisor-side: 'submitted' = student uploaded, awaiting advisor → "Necesita Revisión"
-const STATUS_OPTIONS: { value: string; label: string; color: string }[] = [
-  { value: "submitted", label: "Necesita Revisión", color: "bg-orange-100 text-orange-800" },
-  { value: "in_review", label: "En revisión", color: "bg-yellow-100 text-yellow-800" },
-  { value: "approved", label: "Aprobado", color: "bg-green-100 text-green-800" },
+const STATUS_OPTIONS: { value: BadgeStatus; label: string }[] = [
+  { value: "submitted", label: "Necesita revisión" },
+  { value: "in_review", label: "En revisión" },
+  { value: "approved", label: "Aprobado" },
 ];
-
-const STATUS_DISPLAY: Record<string, { label: string; color: string }> = {
-  not_started: { label: "Sin empezar", color: "bg-gray-200 text-gray-700" },
-  submitted: { label: "Necesita Revisión", color: "bg-orange-100 text-orange-800" },
-  in_review: { label: "En revisión", color: "bg-yellow-100 text-yellow-800" },
-  approved: { label: "Aprobado", color: "bg-green-100 text-green-800" },
-};
 
 type Item = {
   id: string;
@@ -99,6 +94,11 @@ const INITIAL_WORK: WorkState = {
   error: null,
 };
 
+function toBadgeStatus(s: string): BadgeStatus {
+  if (s === "submitted" || s === "in_review" || s === "approved") return s;
+  return "not_started";
+}
+
 async function updateItemStatus(itemId: string, newStatus: string) {
   const supabase = createClient();
   return supabase
@@ -150,7 +150,6 @@ function ItemHeader({
   onToggleSelect?: () => void;
   onToggleOpen: () => void;
 }) {
-  const display = STATUS_DISPLAY[status] ?? STATUS_DISPLAY.not_started;
   return (
     <div className="flex items-start gap-3 p-4">
       {onToggleSelect && (
@@ -160,35 +159,33 @@ function ItemHeader({
           onChange={onToggleSelect}
           onClick={(e) => e.stopPropagation()}
           aria-label={`Seleccionar ${item.title}`}
-          className="mt-1 h-4 w-4 accent-navy"
+          className="mt-1.5 h-4 w-4 accent-[color:var(--accent)]"
         />
       )}
       <button
         type="button"
         onClick={onToggleOpen}
-        className="flex flex-1 items-center justify-between text-left"
+        className="flex flex-1 items-start justify-between gap-3 text-left"
       >
-        <div>
-          <div className="font-medium text-navy">{item.title}</div>
+        <div className="min-w-0">
+          <div className="font-semibold text-foreground">{item.title}</div>
           {item.description && (
-            <div className="text-sm text-muted-foreground">{item.description}</div>
+            <div className="mt-0.5 text-xs text-text-dim">{item.description}</div>
           )}
-          <div className="mt-1 flex gap-3 text-xs text-muted-foreground">
-            <span>
-              📎 {docs.length} archivo{docs.length !== 1 ? "s" : ""}
-            </span>
-            <span>
-              💬 {comments.length} comentario{comments.length !== 1 ? "s" : ""}
-            </span>
+          <div className="mt-1.5 flex gap-3 text-[11px] text-text-muted">
+            <span>📎 {docs.length} archivo{docs.length !== 1 ? "s" : ""}</span>
+            <span>💬 {comments.length} comentario{comments.length !== 1 ? "s" : ""}</span>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2.5">
+          <Badge status={toBadgeStatus(status)} view="advisor" />
           <span
-            className={`rounded-full px-3 py-1 text-xs font-medium ${display.color}`}
+            className="inline-block text-xs text-text-muted transition"
+            style={{ transform: open ? "rotate(180deg)" : "rotate(0)" }}
+            aria-hidden
           >
-            {display.label}
+            ▾
           </span>
-          <span className="text-muted-foreground">{open ? "▴" : "▾"}</span>
         </div>
       </button>
     </div>
@@ -206,47 +203,21 @@ function StatusPicker({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <label className="text-sm font-medium text-navy">Estado:</label>
+      <label className="text-xs font-semibold text-text-dim">Estado:</label>
       <select
         value={status}
         onChange={(e) => onChange(e.target.value)}
         disabled={saving}
-        className="rounded-md border border-border px-3 py-1.5 text-sm focus:border-navy focus:outline-none disabled:opacity-50"
+        className="rounded-md border border-[color:var(--border-input)] bg-[color:var(--input-bg)] px-3 py-1.5 text-sm text-foreground outline-none focus:border-accent/60 disabled:opacity-50"
       >
         {STATUS_OPTIONS.map((o) => (
-          <option key={o.value} value={o.value}>
+          <option key={o.value} value={o.value} className="bg-background">
             {o.label}
           </option>
         ))}
       </select>
       {saving && (
-        <span className="text-xs text-muted-foreground">Guardando…</span>
-      )}
-    </div>
-  );
-}
-
-function FilesSection({
-  docs,
-  onDownload,
-}: {
-  docs: Doc[];
-  onDownload: (path: string) => void;
-}) {
-  const current = docs.find((d) => d.is_current);
-  const old = docs.filter((d) => !d.is_current);
-  return (
-    <div>
-      <h4 className="text-sm font-semibold text-navy">Archivos</h4>
-      {docs.length === 0 ? (
-        <p className="mt-2 text-sm text-muted-foreground">
-          Aún no se han subido archivos.
-        </p>
-      ) : (
-        <div className="mt-2 space-y-2">
-          {current && <CurrentDocRow doc={current} onDownload={onDownload} />}
-          {old.length > 0 && <OldVersions versions={old} onDownload={onDownload} />}
-        </div>
+        <span className="text-[11px] text-text-muted">Guardando…</span>
       )}
     </div>
   );
@@ -260,22 +231,31 @@ function CurrentDocRow({
   onDownload: (path: string) => void;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-md bg-muted p-3 text-sm">
-      <div>
-        <div className="font-medium text-navy">
-          📎 {doc.filename}
-          <span className="ml-2 rounded bg-green-100 px-2 py-0.5 text-xs text-green-800">
+    <div
+      className="flex items-center justify-between rounded-lg p-3 text-sm"
+      style={{ background: "var(--surface-sunken)" }}
+    >
+      <div className="min-w-0">
+        <div className="font-medium text-foreground">
+          📎 <span className="truncate">{doc.filename}</span>
+          <span
+            className="ml-2 rounded px-2 py-0.5 text-[11px]"
+            style={{
+              background: "rgba(34,197,94,0.15)",
+              color: "#4ade80",
+            }}
+          >
             actual · v{doc.version}
           </span>
         </div>
-        <div className="text-xs text-muted-foreground">
+        <div className="text-[11px] text-text-muted">
           {Math.round(doc.size_bytes / 1024)} KB ·{" "}
           {new Date(doc.created_at).toLocaleString("es-ES")}
         </div>
       </div>
       <button
         onClick={() => onDownload(doc.storage_path)}
-        className="text-navy underline hover:text-navy-dark"
+        className="shrink-0 text-xs font-semibold text-accent hover:underline"
       >
         Descargar
       </button>
@@ -292,22 +272,23 @@ function OldVersions({
 }) {
   return (
     <details className="text-sm">
-      <summary className="cursor-pointer text-muted-foreground">
+      <summary className="cursor-pointer text-xs text-text-dim">
         Versiones anteriores ({versions.length})
       </summary>
       <div className="mt-2 space-y-1">
         {versions.map((d) => (
           <div
             key={d.id}
-            className="flex items-center justify-between rounded-md bg-muted/50 p-2 text-xs"
+            className="flex items-center justify-between rounded-md p-2 text-[11px]"
+            style={{ background: "var(--surface-sunken)" }}
           >
-            <span>
+            <span className="truncate text-text-dim">
               📎 {d.filename} · v{d.version} ·{" "}
               {new Date(d.created_at).toLocaleString("es-ES")}
             </span>
             <button
               onClick={() => onDownload(d.storage_path)}
-              className="text-navy underline"
+              className="shrink-0 text-accent hover:underline"
             >
               Descargar
             </button>
@@ -318,31 +299,65 @@ function OldVersions({
   );
 }
 
+function FilesSection({
+  docs,
+  onDownload,
+}: {
+  docs: Doc[];
+  onDownload: (path: string) => void;
+}) {
+  const current = docs.find((d) => d.is_current);
+  const old = docs.filter((d) => !d.is_current);
+  return (
+    <div>
+      <h4 className="text-xs font-bold uppercase tracking-[0.06em] text-text-dim">
+        Archivos
+      </h4>
+      {docs.length === 0 ? (
+        <p className="mt-2 text-sm text-text-muted">Aún no se han subido archivos.</p>
+      ) : (
+        <div className="mt-2 space-y-2">
+          {current && <CurrentDocRow doc={current} onDownload={onDownload} />}
+          {old.length > 0 && <OldVersions versions={old} onDownload={onDownload} />}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CommentItem({ c }: { c: Comment }) {
+  const internalStyle = c.internal_only
+    ? {
+        background: "rgba(245,158,11,0.08)",
+        border: "1px solid rgba(245,158,11,0.2)",
+      }
+    : { background: "var(--surface-sunken)" };
+  return (
+    <div className="rounded-lg p-3 text-sm" style={internalStyle}>
+      <div className="text-[11px] text-text-muted">
+        {new Date(c.created_at).toLocaleString("es-ES")}
+        {c.internal_only && (
+          <span
+            className="ml-2 rounded px-1.5 py-0.5 text-[10px]"
+            style={{ background: "rgba(245,158,11,0.25)", color: "#fbbf24" }}
+          >
+            interno
+          </span>
+        )}
+      </div>
+      <div className="mt-1 text-foreground">{c.body}</div>
+    </div>
+  );
+}
+
 function CommentsThread({ comments }: { comments: Comment[] }) {
   if (comments.length === 0) {
-    return <p className="text-sm text-muted-foreground">Sin comentarios aún.</p>;
+    return <p className="text-sm text-text-muted">Sin comentarios aún.</p>;
   }
   return (
     <div className="space-y-2">
       {comments.map((c) => (
-        <div
-          key={c.id}
-          className={`rounded-md p-3 text-sm ${
-            c.internal_only
-              ? "border border-yellow-200 bg-yellow-50"
-              : "bg-muted"
-          }`}
-        >
-          <div className="text-xs text-muted-foreground">
-            {new Date(c.created_at).toLocaleString("es-ES")}
-            {c.internal_only && (
-              <span className="ml-2 rounded bg-yellow-200 px-1.5 py-0.5 text-yellow-900">
-                interno
-              </span>
-            )}
-          </div>
-          <div className="mt-1 text-navy">{c.body}</div>
-        </div>
+        <CommentItem key={c.id} c={c} />
       ))}
     </div>
   );
@@ -374,26 +389,73 @@ function CommentForm({
         placeholder="Escribir comentario para el estudiante…"
         rows={2}
         maxLength={5000}
-        className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-navy focus:outline-none"
+        className="w-full rounded-md border border-[color:var(--border-input)] bg-[color:var(--input-bg)] px-3 py-2 text-sm text-foreground placeholder:text-text-muted outline-none focus:border-accent/60"
       />
       <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+        <label className="flex items-center gap-2 text-[11px] text-text-muted">
           <input
             type="checkbox"
             checked={internalOnly}
             onChange={(e) => setInternalOnly(e.target.checked)}
+            className="accent-[color:var(--accent)]"
           />
           Solo equipo interno (no visible al estudiante)
         </label>
         <button
           type="submit"
           disabled={!body.trim() || posting}
-          className="rounded-full bg-navy px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-50"
+          className="rounded-full bg-accent px-4 py-1.5 text-xs font-bold text-accent-text disabled:opacity-50"
         >
           {posting ? "Enviando…" : "Comentar"}
         </button>
       </div>
     </form>
+  );
+}
+
+function ItemBody({
+  status,
+  work,
+  docs,
+  comments,
+  onStatusChange,
+  onDownload,
+  onPostComment,
+}: {
+  status: string;
+  work: WorkState;
+  docs: Doc[];
+  comments: Comment[];
+  onStatusChange: (s: string) => void;
+  onDownload: (path: string) => void;
+  onPostComment: (body: string, internalOnly: boolean) => void;
+}) {
+  return (
+    <div className="space-y-5 border-t border-border p-4">
+      <StatusPicker
+        status={status}
+        saving={work.savingStatus}
+        onChange={onStatusChange}
+      />
+      <FilesSection docs={docs} onDownload={onDownload} />
+      <div>
+        <h4 className="text-xs font-bold uppercase tracking-[0.06em] text-text-dim">
+          Comentarios
+        </h4>
+        <div className="mt-2">
+          <CommentsThread comments={comments} />
+        </div>
+        <CommentForm posting={work.postingComment} onSubmit={onPostComment} />
+      </div>
+      {work.error && (
+        <p
+          className="rounded-md p-2 text-sm text-red-brand"
+          style={{ background: "rgba(206,69,77,0.1)" }}
+        >
+          {work.error}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -463,50 +525,32 @@ export function AdvisorChecklistItem({
   return (
     <div
       id={`item-${item.id}`}
-      className={`scroll-mt-40 rounded-lg bg-white shadow-sm ${
-        selected ? "ring-2 ring-navy" : ""
-      }`}
+      className="scroll-mt-40"
+      style={selected ? { outline: "2px solid var(--accent)", outlineOffset: 2, borderRadius: 16 } : undefined}
     >
-      <ItemHeader
-        item={item}
-        docs={docs}
-        comments={comments}
-        status={status}
-        open={open}
-        selected={selected}
-        onToggleSelect={onToggleSelect}
-        onToggleOpen={() => setOpen((o) => !o)}
-      />
-      {open && (
-        <div className="space-y-5 border-t border-border p-4">
-          <StatusPicker
+      <GlassCard>
+        <ItemHeader
+          item={item}
+          docs={docs}
+          comments={comments}
+          status={status}
+          open={open}
+          selected={selected}
+          onToggleSelect={onToggleSelect}
+          onToggleOpen={() => setOpen((o) => !o)}
+        />
+        {open && (
+          <ItemBody
             status={status}
-            saving={work.savingStatus}
-            onChange={(s) => void handleStatusChange(s)}
-          />
-          <FilesSection
+            work={work}
             docs={docs}
-            onDownload={(path) => void handleDownload(path)}
+            comments={comments}
+            onStatusChange={(s) => void handleStatusChange(s)}
+            onDownload={(p) => void handleDownload(p)}
+            onPostComment={(b, i) => void handlePostComment(b, i)}
           />
-          <div>
-            <h4 className="text-sm font-semibold text-navy">Comentarios</h4>
-            <div className="mt-2">
-              <CommentsThread comments={comments} />
-            </div>
-            <CommentForm
-              posting={work.postingComment}
-              onSubmit={(body, internal) =>
-                void handlePostComment(body, internal)
-              }
-            />
-          </div>
-          {work.error && (
-            <p className="rounded-md bg-red-50 p-2 text-sm text-red-brand">
-              {work.error}
-            </p>
-          )}
-        </div>
-      )}
+        )}
+      </GlassCard>
     </div>
   );
 }

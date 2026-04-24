@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { assertDefined } from "@/lib/assert";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { OnboardingForm } from "./OnboardingForm";
 
 export const dynamic = "force-dynamic";
@@ -35,14 +36,16 @@ export default async function OnboardingPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="rounded-xl bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-bold text-navy">¡Bienvenido a GOES!</h1>
-        <p className="mt-2 text-muted-foreground">
-          Para empezar, cuéntanos un poco sobre ti. Esto nos permite preparar tu
-          checklist personalizado.
+      <GlassCard className="p-8">
+        <h1 className="font-display text-2xl font-extrabold text-foreground">
+          ¡Bienvenido a GOES!
+        </h1>
+        <p className="mt-2 text-sm text-text-dim">
+          Para empezar, cuéntanos un poco sobre ti. Esto nos permite preparar
+          tu checklist personalizado.
         </p>
         <OnboardingForm defaultName={defaultName} />
-      </div>
+      </GlassCard>
     </div>
   );
 }

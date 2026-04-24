@@ -4,6 +4,38 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { GlassCard } from "@/components/ui/GlassCard";
+
+const INPUT_CLS =
+  "mt-1.5 w-full rounded-xl bg-[color:var(--input-bg)] px-3.5 py-2.5 text-sm text-foreground placeholder:text-text-muted border border-[color:var(--border-input)] outline-none focus:border-accent/60 focus:bg-[color:var(--surface-track)]";
+
+function Field({
+  label,
+  type,
+  value,
+  onChange,
+  autoComplete,
+}: {
+  label: string;
+  type: string;
+  value: string;
+  onChange: (v: string) => void;
+  autoComplete?: string;
+}) {
+  return (
+    <label className="block">
+      <span className="text-xs font-semibold text-text-dim">{label}</span>
+      <input
+        type={type}
+        required
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        autoComplete={autoComplete}
+        className={INPUT_CLS}
+      />
+    </label>
+  );
+}
 
 export function LoginForm() {
   const router = useRouter();
@@ -31,56 +63,45 @@ export function LoginForm() {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-navy">Iniciar sesión</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Bienvenido de vuelta a GOES.
-      </p>
-
-      <form
-        onSubmit={(e) => void handleSubmit(e)}
-        className="mt-8 space-y-4"
-      >
-        <div>
-          <label className="block text-sm font-medium text-navy">Email</label>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 w-full rounded-md border border-border px-3 py-2 focus:border-navy focus:outline-none"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-navy">
-            Contraseña
-          </label>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 w-full rounded-md border border-border px-3 py-2 focus:border-navy focus:outline-none"
-          />
-        </div>
-
+    <GlassCard className="p-8">
+      <h1 className="font-display text-2xl font-extrabold text-foreground">
+        Iniciar sesión
+      </h1>
+      <p className="mt-1 text-sm text-text-dim">Bienvenido de vuelta a GOES.</p>
+      <form onSubmit={(e) => void handleSubmit(e)} className="mt-7 space-y-4">
+        <Field
+          label="Email"
+          type="email"
+          value={email}
+          onChange={setEmail}
+          autoComplete="email"
+        />
+        <Field
+          label="Contraseña"
+          type="password"
+          value={password}
+          onChange={setPassword}
+          autoComplete="current-password"
+        />
         {error && <p className="text-sm text-red-brand">{error}</p>}
-
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-full bg-navy py-2.5 font-semibold text-white transition hover:bg-navy-dark disabled:opacity-50"
+          className="w-full rounded-full bg-accent py-2.5 text-sm font-bold text-accent-text transition hover:bg-accent-dark disabled:opacity-50"
+          style={{ boxShadow: "0 0 16px var(--glow)" }}
         >
           {loading ? "Cargando…" : "Entrar"}
         </button>
       </form>
-
-      <p className="mt-6 text-center text-sm text-muted-foreground">
+      <p className="mt-5 text-center text-xs text-text-muted">
         ¿No tienes cuenta?{" "}
-        <Link href="/signup" className="font-semibold text-navy">
+        <Link
+          href="/signup"
+          className="font-semibold text-accent hover:underline"
+        >
           Crear una
         </Link>
       </p>
-    </div>
+    </GlassCard>
   );
 }

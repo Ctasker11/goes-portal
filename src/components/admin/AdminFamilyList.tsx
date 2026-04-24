@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { GlassCard } from "@/components/ui/GlassCard";
 
 export type FamilyRow = {
   id: string;
@@ -61,6 +62,9 @@ function applyFilters(
   return rows;
 }
 
+const SELECT_CLS =
+  "rounded-md border border-[color:var(--border-input)] bg-[color:var(--input-bg)] px-3 py-2 text-sm text-foreground outline-none focus:border-accent/60";
+
 function FilterBar({
   search,
   program,
@@ -77,34 +81,50 @@ function FilterBar({
   onSort: (v: SortKey) => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-xl bg-white p-4 shadow-sm">
+    <GlassCard className="flex flex-wrap items-center gap-3 p-4">
       <input
         type="search"
         placeholder="Buscar estudiante…"
         value={search}
         onChange={(e) => onSearch(e.target.value)}
-        className="flex-1 min-w-[200px] rounded-md border border-border px-3 py-2 text-sm focus:border-navy focus:outline-none"
+        className="min-w-[200px] flex-1 rounded-md border border-[color:var(--border-input)] bg-[color:var(--input-bg)] px-3 py-2 text-sm text-foreground placeholder:text-text-muted outline-none focus:border-accent/60"
       />
       <select
         value={program}
         onChange={(e) => onProgram(e.target.value as ProgramFilter)}
-        className="rounded-md border border-border px-3 py-2 text-sm focus:border-navy focus:outline-none"
+        className={SELECT_CLS}
       >
-        <option value="all">Todos los programas</option>
-        <option value="academic">Solo académica</option>
-        <option value="sports">Solo deportiva</option>
-        <option value="both">Mixta</option>
+        <option value="all" className="bg-background">Todos los programas</option>
+        <option value="academic" className="bg-background">Solo académica</option>
+        <option value="sports" className="bg-background">Solo deportiva</option>
+        <option value="both" className="bg-background">Mixta</option>
       </select>
       <select
         value={sort}
         onChange={(e) => onSort(e.target.value as SortKey)}
-        className="rounded-md border border-border px-3 py-2 text-sm focus:border-navy focus:outline-none"
+        className={SELECT_CLS}
       >
-        <option value="pending_desc">Necesita revisión (más primero)</option>
-        <option value="recent_desc">Actividad reciente</option>
-        <option value="progress_desc">Más avanzado</option>
-        <option value="name_asc">Nombre (A-Z)</option>
+        <option value="pending_desc" className="bg-background">Necesita revisión (más primero)</option>
+        <option value="recent_desc" className="bg-background">Actividad reciente</option>
+        <option value="progress_desc" className="bg-background">Más avanzado</option>
+        <option value="name_asc" className="bg-background">Nombre (A-Z)</option>
       </select>
+    </GlassCard>
+  );
+}
+
+function ProgressCell({ pct, approved, total }: { pct: number; approved: number; total: number }) {
+  return (
+    <div className="flex items-center justify-center gap-2">
+      <div className="h-1.5 w-24 overflow-hidden rounded-full bg-[color:var(--surface-track)]">
+        <div
+          className="h-full bg-accent"
+          style={{ width: `${pct}%`, boxShadow: "0 0 6px var(--glow-strong)" }}
+        />
+      </div>
+      <span className="text-xs tabular-nums text-text-dim">
+        {approved}/{total}
+      </span>
     </div>
   );
 }
@@ -113,8 +133,8 @@ function FamilyRowView({ f }: { f: FamilyRow }) {
   const pct = f.total > 0 ? Math.round((f.approved / f.total) * 100) : 0;
   const lastDate = f.last_activity_at ?? f.created_at;
   return (
-    <tr className="hover:bg-muted/50">
-      <td className="px-6 py-3 font-medium text-navy">
+    <tr className="transition hover:bg-[color:var(--surface-sunken)]">
+      <td className="px-6 py-3 font-medium text-foreground">
         <span className="inline-flex items-center gap-2">
           {isRecent(f.last_activity_at) && (
             <span
@@ -126,16 +146,9 @@ function FamilyRowView({ f }: { f: FamilyRow }) {
           {f.student_name}
         </span>
       </td>
-      <td className="px-6 py-3">{PROGRAM_LABELS[f.program]}</td>
+      <td className="px-6 py-3 text-text-dim">{PROGRAM_LABELS[f.program]}</td>
       <td className="px-6 py-3">
-        <div className="flex items-center justify-center gap-2">
-          <div className="h-1.5 w-24 overflow-hidden rounded-full bg-muted">
-            <div className="h-full bg-navy" style={{ width: `${pct}%` }} />
-          </div>
-          <span className="text-xs tabular-nums text-muted-foreground">
-            {f.approved}/{f.total}
-          </span>
-        </div>
+        <ProgressCell pct={pct} approved={f.approved} total={f.total} />
       </td>
       <td className="px-6 py-3 text-center">
         {f.pending_review > 0 ? (
@@ -143,16 +156,16 @@ function FamilyRowView({ f }: { f: FamilyRow }) {
             {f.pending_review}
           </span>
         ) : (
-          <span className="text-xs text-muted-foreground">—</span>
+          <span className="text-xs text-text-muted">—</span>
         )}
       </td>
-      <td className="px-6 py-3 whitespace-nowrap text-muted-foreground">
+      <td className="px-6 py-3 whitespace-nowrap text-text-muted">
         {new Date(lastDate).toLocaleDateString("es-ES")}
       </td>
       <td className="px-6 py-3 text-right">
         <Link
           href={`/admin/${f.id}`}
-          className="inline-block whitespace-nowrap rounded-md border border-navy bg-white px-4 py-2 text-sm font-semibold text-navy shadow-sm transition hover:bg-navy hover:text-white"
+          className="inline-block whitespace-nowrap rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground transition hover:border-accent/60 hover:bg-[color:var(--input-bg)]"
         >
           Ver perfil
         </Link>
@@ -163,7 +176,7 @@ function FamilyRowView({ f }: { f: FamilyRow }) {
 
 function FamilyTable({ families }: { families: FamilyRow[] }) {
   return (
-    <div className="overflow-hidden rounded-xl bg-white shadow-sm">
+    <GlassCard className="overflow-hidden" hover={false}>
       <table className="w-full text-sm">
         <colgroup>
           <col className="w-[28%]" />
@@ -173,13 +186,13 @@ function FamilyTable({ families }: { families: FamilyRow[] }) {
           <col className="w-[14%]" />
           <col className="w-[10%]" />
         </colgroup>
-        <thead className="bg-muted text-xs uppercase tracking-wide text-muted-foreground">
-          <tr>
-            <th className="px-6 py-3 text-left">Estudiante</th>
-            <th className="px-6 py-3 text-left">Programa</th>
-            <th className="px-6 py-3 text-center">Progreso</th>
-            <th className="px-6 py-3 text-center">Necesita revisión</th>
-            <th className="px-6 py-3 text-left">Última actividad</th>
+        <thead className="text-[11px] uppercase tracking-[0.06em] text-text-dim">
+          <tr style={{ background: "var(--surface-sunken)" }}>
+            <th className="px-6 py-3 text-left font-semibold">Estudiante</th>
+            <th className="px-6 py-3 text-left font-semibold">Programa</th>
+            <th className="px-6 py-3 text-center font-semibold">Progreso</th>
+            <th className="px-6 py-3 text-center font-semibold">Necesita revisión</th>
+            <th className="px-6 py-3 text-left font-semibold">Última actividad</th>
             <th className="px-6 py-3 text-right"></th>
           </tr>
         </thead>
@@ -189,17 +202,14 @@ function FamilyTable({ families }: { families: FamilyRow[] }) {
           ))}
           {families.length === 0 && (
             <tr>
-              <td
-                colSpan={6}
-                className="px-6 py-12 text-center text-muted-foreground"
-              >
+              <td colSpan={6} className="px-6 py-12 text-center text-text-muted">
                 Ningún estudiante coincide con el filtro.
               </td>
             </tr>
           )}
         </tbody>
       </table>
-    </div>
+    </GlassCard>
   );
 }
 

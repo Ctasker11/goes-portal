@@ -85,19 +85,31 @@ export default async function DashboardPage() {
     views,
     user.id,
   );
-  const { total, pct } = computeProgress(itemList);
+  const { total, done, pct } = computeProgress(itemList);
   const grouped = groupByCategory(itemList);
   const { nextAction, count: pendingCount } = findNextAction(
     itemList,
     docByItem,
   );
+  const inProcessCount = itemList.filter(
+    (i) => i.status === "submitted" || i.status === "in_review",
+  ).length;
+  const notStartedCount = itemList.filter(
+    (i) => i.status === "not_started",
+  ).length;
 
   return (
-    <div className="space-y-8">
-      <ProgressHeader fullName={profile.full_name} pct={pct} />
+    <div className="space-y-10">
+      <ProgressHeader
+        fullName={profile.full_name}
+        pct={pct}
+        approvedCount={done}
+        inProcessCount={inProcessCount}
+        pendingCount={notStartedCount}
+      />
       {nextAction && <NextActionBanner action={nextAction} count={pendingCount} />}
       {total === 0 && <EmptyState />}
-      {Object.entries(grouped).map(([category, list]) => (
+      {Object.entries(grouped).map(([category, list], i) => (
         <CategoryGroup
           key={category}
           category={category}
@@ -107,6 +119,7 @@ export default async function DashboardPage() {
           unreadByItem={unreadByItem}
           familyId={familyId}
           userId={user.id}
+          delay={350 + i * 100}
         />
       ))}
     </div>

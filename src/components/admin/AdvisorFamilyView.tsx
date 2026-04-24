@@ -87,13 +87,20 @@ function FamilyHeader({
   onOpenDrawer: () => void;
 }) {
   return (
-    <section className="sticky top-0 z-20 -mx-6 border-b border-border bg-white/95 px-6 py-4 shadow-sm backdrop-blur">
+    <section
+      className="sticky top-[60px] z-10 -mx-6 border-b border-border px-6 py-4 text-foreground"
+      style={{
+        background: "var(--surface-overlay)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+      }}
+    >
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="truncate text-xl font-bold text-navy">
+          <h1 className="font-display truncate text-xl font-extrabold">
             {family.student_name}
           </h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">
+          <p className="mt-0.5 text-xs text-text-dim">
             <span className="capitalize">{family.program}</span> · Alta:{" "}
             {new Date(family.created_at).toLocaleDateString("es-ES")}
           </p>
@@ -109,16 +116,19 @@ function FamilyHeader({
           <button
             type="button"
             onClick={onOpenDrawer}
-            className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-navy hover:bg-muted"
+            className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground/80 transition hover:border-accent/50 hover:bg-[color:var(--surface-sunken)] hover:text-foreground"
           >
             Registro
           </button>
         </div>
       </div>
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[color:var(--surface-track)]">
         <div
-          className="h-full bg-navy transition-all"
-          style={{ width: `${pct}%` }}
+          className="h-full rounded-full bg-accent transition-all"
+          style={{
+            width: `${pct}%`,
+            boxShadow: "0 0 6px var(--glow-strong)",
+          }}
         />
       </div>
     </section>
@@ -137,13 +147,13 @@ function HeaderStat({
   return (
     <div className="text-center">
       <div
-        className={`text-lg font-bold tabular-nums ${
-          accent ? "text-red-brand" : "text-navy"
+        className={`font-display text-lg font-extrabold tabular-nums ${
+          accent ? "text-red-brand" : "text-foreground"
         }`}
       >
         {value}
       </div>
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+      <div className="text-[10px] uppercase tracking-[0.08em] text-text-muted">
         {label}
       </div>
     </div>
@@ -162,20 +172,29 @@ function BulkBar({
   onClear: () => void;
 }) {
   return (
-    <div className="fixed bottom-6 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-full bg-navy px-5 py-3 text-sm text-white shadow-xl">
+    <div
+      className="fixed bottom-6 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-full px-5 py-3 text-sm text-foreground"
+      style={{
+        background: "var(--surface-overlay)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        border: "1px solid var(--border)",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.4)",
+      }}
+    >
       <span className="font-medium">
         {count} seleccionado{count !== 1 ? "s" : ""}
       </span>
       <button
         onClick={onApprove}
         disabled={saving}
-        className="rounded-full bg-white px-4 py-1.5 text-xs font-semibold text-navy disabled:opacity-50"
+        className="rounded-full bg-accent px-4 py-1.5 text-xs font-bold text-accent-text disabled:opacity-50"
       >
         {saving ? "Guardando…" : "Aprobar todos"}
       </button>
       <button
         onClick={onClear}
-        className="text-xs text-white/80 hover:text-white"
+        className="text-xs text-text-dim hover:text-foreground"
       >
         Limpiar
       </button>
@@ -245,7 +264,7 @@ export function AdvisorFamilyView({
       <div>
         <Link
           href="/admin"
-          className="text-sm text-muted-foreground hover:text-navy"
+          className="text-sm text-text-dim hover:text-foreground"
         >
           ← Volver al panel
         </Link>
@@ -260,7 +279,7 @@ export function AdvisorFamilyView({
       />
       {Object.entries(grouped).map(([category, list]) => (
         <section key={category}>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.08em] text-text-dim">
             {CATEGORY_LABELS[category] ?? category}
           </h2>
           <div className="space-y-2">

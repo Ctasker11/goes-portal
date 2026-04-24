@@ -29,13 +29,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div
             key={t.id}
             role="status"
-            className={`pointer-events-auto min-w-[240px] rounded-lg px-4 py-3 text-sm shadow-lg ${
-              t.kind === "success"
-                ? "bg-green-600 text-white"
-                : t.kind === "error"
-                  ? "bg-red-brand text-white"
-                  : "bg-navy text-white"
-            }`}
+            className="pointer-events-auto min-w-[240px] rounded-xl border border-border px-4 py-3 text-sm text-foreground backdrop-blur-xl"
+            style={{
+              background:
+                t.kind === "success"
+                  ? "rgba(34,197,94,0.15)"
+                  : t.kind === "error"
+                    ? "rgba(206,69,77,0.2)"
+                    : "var(--surface-overlay)",
+              boxShadow: "0 10px 24px rgba(0,0,0,0.35)",
+              animation: "fadeUp 300ms cubic-bezier(0.22,1,0.36,1)",
+            }}
           >
             {t.message}
           </div>

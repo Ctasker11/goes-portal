@@ -1,32 +1,215 @@
 @import "tailwindcss";
 
+/* ─── Light (default) ─── */
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
-  --brand-navy: #1e2a5e;
-  --brand-navy-dark: #16204a;
-  --brand-red: #c8202e;
-  --brand-red-dark: #a8121f;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --border: #e2e8f0;
+  --background: #f5f0e8;
+  --foreground: #0a1628;
+
+  --brand-navy: #043e9a;
+  --brand-navy-light: #0a4fc0;
+  --brand-lime: #dbf501;
+  --brand-lime-dark: #c2d801;
+  --brand-red: #ce454d;
+  --brand-cream: #f2eee9;
+
+  --surface-card: rgba(255, 255, 255, 0.7);
+  --surface-card-hover: rgba(255, 255, 255, 0.9);
+  --surface-glass: rgba(4, 62, 154, 0.03);
+  --surface-sunken: rgba(4, 13, 26, 0.04);
+  --surface-track: rgba(4, 13, 26, 0.08);
+  --surface-overlay: rgba(255, 255, 255, 0.8);
+  --surface-scrim: rgba(4, 13, 26, 0.25);
+  --surface-code: rgba(4, 13, 26, 0.06);
+  --surface-comment: rgba(219, 245, 1, 0.18);
+
+  --text-dim: #4a5568;
+  --text-muted: #94a0b0;
+
+  --border: rgba(4, 13, 26, 0.1);
+  --border-active: rgba(4, 62, 154, 0.3);
+  --border-input: rgba(4, 13, 26, 0.12);
+
+  --glow: rgba(206, 69, 77, 0.12);
+  --glow-strong: rgba(206, 69, 77, 0.35);
+
+  --accent: var(--brand-red);
+  --accent-dark: #a5383f;
+  --accent-text: #ffffff;
+
+  --logo-a: var(--brand-navy);
+  --logo-b: #032e72;
+
+  --ring-track: rgba(4, 13, 26, 0.08);
+  --input-bg: rgba(255, 255, 255, 0.6);
+
+  --overlay-blue: rgba(4, 62, 154, 0.1);
+  --overlay-lime: rgba(219, 245, 1, 0.2);
+
+  --particle-a: #043e9a;
+  --particle-b: #3b7ddd;
+  --particle-c: #c2d801;
+
+  --card-shadow: 0 2px 12px rgba(4, 13, 26, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --card-shadow-glow: 0 0 24px var(--glow-strong), 0 2px 12px rgba(4, 13, 26, 0.1);
+
+  --muted: var(--surface-card);
+  --muted-foreground: var(--text-dim);
+}
+
+/* ─── Dark override ─── */
+[data-theme="dark"] {
+  --background: #021a4a;
+  --foreground: #e8ecf2;
+
+  --surface-card: rgba(10, 38, 95, 0.55);
+  --surface-card-hover: rgba(18, 50, 115, 0.7);
+  --surface-glass: rgba(255, 255, 255, 0.03);
+  --surface-sunken: rgba(255, 255, 255, 0.04);
+  --surface-track: rgba(255, 255, 255, 0.1);
+  --surface-overlay: rgba(2, 26, 74, 0.82);
+  --surface-scrim: rgba(0, 0, 0, 0.6);
+  --surface-code: rgba(0, 0, 0, 0.3);
+  --surface-comment: rgba(219, 245, 1, 0.06);
+
+  --text-dim: #7a8799;
+  --text-muted: #4a5568;
+
+  --border: rgba(255, 255, 255, 0.06);
+  --border-active: rgba(219, 245, 1, 0.2);
+  --border-input: rgba(255, 255, 255, 0.1);
+
+  --glow: rgba(219, 245, 1, 0.08);
+  --glow-strong: rgba(219, 245, 1, 0.3);
+
+  --accent: var(--brand-lime);
+  --accent-dark: var(--brand-lime-dark);
+  --accent-text: var(--brand-navy);
+
+  --logo-a: var(--brand-lime);
+  --logo-b: #a8c000;
+
+  --ring-track: rgba(255, 255, 255, 0.06);
+  --input-bg: rgba(255, 255, 255, 0.04);
+
+  --overlay-blue: rgba(4, 62, 154, 0.15);
+  --overlay-lime: rgba(219, 245, 1, 0.04);
+
+  --particle-a: #dbf501;
+  --particle-b: #3b7ddd;
+  --particle-c: rgba(255, 255, 255, 0.6);
+
+  --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --card-shadow-glow: 0 0 24px var(--glow-strong), inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
   --color-navy: var(--brand-navy);
-  --color-navy-dark: var(--brand-navy-dark);
+  --color-navy-light: var(--brand-navy-light);
+  --color-lime-brand: var(--brand-lime);
+  --color-lime-brand-dark: var(--brand-lime-dark);
+  --color-accent: var(--accent);
+  --color-accent-dark: var(--accent-dark);
+  --color-accent-text: var(--accent-text);
   --color-red-brand: var(--brand-red);
-  --color-red-brand-dark: var(--brand-red-dark);
+  --color-cream: var(--brand-cream);
+
+  --color-surface-card: var(--surface-card);
+  --color-surface-card-hover: var(--surface-card-hover);
+  --color-surface-glass: var(--surface-glass);
+
+  --color-text-dim: var(--text-dim);
+  --color-text-muted: var(--text-muted);
+
+  --color-border: var(--border);
+  --color-border-active: var(--border-active);
+
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-border: var(--border);
-  --font-sans: var(--font-inter);
+
+  --font-display: var(--font-manrope);
+  --font-sans: var(--font-open-sans);
+}
+
+::selection {
+  background: var(--brand-lime);
+  color: var(--brand-navy);
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface-track);
+  border-radius: 2px;
+}
+
+html,
+body {
+  height: 100%;
+  overflow-x: hidden;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-open-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background 400ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+@keyframes drift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(30px, -20px); }
+  50% { transform: translate(-10px, -40px); }
+  75% { transform: translate(-30px, -10px); }
+  100% { transform: translate(0, 0); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(219, 245, 1, 0.3);
+  }
+  50% {
+    opacity: 0.85;
+    box-shadow: 0 0 20px rgba(219, 245, 1, 0.5);
+  }
+}
+@keyframes checkDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

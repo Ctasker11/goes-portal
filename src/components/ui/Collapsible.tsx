@@ -17,15 +17,20 @@ export function Collapsible({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="mb-3 flex w-full cursor-pointer items-center justify-between text-left"
+        className="mb-3 flex w-full cursor-pointer items-center gap-2 text-left"
         aria-expanded={open}
       >
-        <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          <span className={`transition ${open ? "rotate-90" : ""}`}>▸</span>
+        <span
+          className="inline-block text-[11px] text-text-muted transition"
+          style={{ transform: open ? "rotate(90deg)" : "rotate(0)" }}
+        >
+          ▸
+        </span>
+        <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.08em] text-text-dim">
           {title}
         </div>
       </button>
-      {open && <div>{children}</div>}
+      {open && <div className="space-y-2">{children}</div>}
     </section>
   );
 }
