@@ -99,7 +99,7 @@ export default async function DashboardPage() {
   ).length;
 
   return (
-    <div className="space-y-10">
+    <div className="mx-auto max-w-5xl space-y-10 px-6 py-10">
       <ProgressHeader
         fullName={profile.full_name}
         pct={pct}

@@ -61,7 +61,7 @@ function Hero() {
                     strokeDasharray: 420,
                     strokeDashoffset: 420,
                     animation:
-                      "checkDraw 1800ms cubic-bezier(0.22,1,0.36,1) 600ms forwards",
+                      "checkDraw 2160ms cubic-bezier(0.22,1,0.36,1) 600ms forwards",
                   }}
                 />
               </svg>

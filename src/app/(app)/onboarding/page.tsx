@@ -35,7 +35,7 @@ export default async function OnboardingPage() {
     profile?.full_name || (user.user_metadata?.full_name as string) || "";
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-2xl px-6 py-10">
       <GlassCard className="p-8">
         <h1 className="font-display text-2xl font-extrabold text-foreground">
           ¡Bienvenido a GOES!

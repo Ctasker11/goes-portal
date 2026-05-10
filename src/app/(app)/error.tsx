@@ -15,7 +15,7 @@ export default function AppError({
   }, [error]);
 
   return (
-    <div className="mx-auto max-w-md">
+    <div className="mx-auto max-w-md px-6 py-10">
       <GlassCard className="p-8 text-center">
         <h2 className="font-display text-xl font-extrabold text-foreground">
           Algo salió mal
